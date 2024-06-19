@@ -48,7 +48,7 @@ print(net3.bias)    # Parameter containing: tensor([12.], requires_grad=True)
 So, algorithms that might have been difficult to implement in the past can now be implemented elegantly and simply through Nytorch.
 
 
-# Introduction
+# Installation
 
 Nytorch is a tool developed based on PyTorch.
 Before installing Nytorch, please ensure that you have installed PyTorch version 1.7 or higher, and are using Python version 3.8 or higher.
