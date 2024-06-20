@@ -1,3 +1,29 @@
-**/__pycache__/
+# Python bytecode
+*.pyc
 
+# Python cache
+__pycache__/
+
+# Build directory
+build/
+
+# Distribution directory
+dist/
+
+# Egg-info directory
+nytorch.egg-info/
+
+# Sphinx documentation build directory
+docs/_build/
+
+# Compiled documentation
+docs/_sources/
+docs/_static/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore any local virtual environment directories
+env/
+venv/
 
