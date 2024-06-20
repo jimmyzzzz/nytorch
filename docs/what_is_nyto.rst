@@ -1,5 +1,5 @@
 What is Nyto?
 ==================
 
-A: nyto is nyto
+https://github.com/jimmyzzzz/nyto
 
