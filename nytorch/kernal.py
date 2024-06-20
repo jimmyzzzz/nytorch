@@ -859,7 +859,7 @@ class Particle(abc.ABC, Generic[Tproduct]):
         assert not isinstance(other, Product)
         if isinstance(other, type(self)):
             return self.product_(self.product()-other.product())
-        return self.product_(other-self.product())
+        return self.product_(self.product()-other)
     
     def __mul__(self: Tparticle, other) -> Tparticle:
         """
@@ -959,7 +959,7 @@ class Particle(abc.ABC, Generic[Tproduct]):
         assert not isinstance(other, Product)
         if isinstance(other, type(self)):
             return self.product_(self.product()/other.product())
-        return self.product_(other/self.product())
+        return self.product_(self.product()/other)
 
     @abc.abstractmethod
     def product(self) -> Tproduct:

@@ -101,6 +101,72 @@ class TestCloneFrom(unittest.TestCase):
         self.assertTrue(torch.equal(root3.submodule.param, root2.submodule.param))
 
 
+class TestRand(unittest.TestCase):
+    def test_rand_root(self):
+        param0: nn.Parameter = nn.Parameter(torch.rand(2, 2))
+        param1: nn.Parameter = nn.Parameter(torch.rand(3, 3))
+        buffer0: torch.Tensor = torch.rand(1)
+        buffer1: torch.Tensor = torch.rand(1)
+        lin: nn.Linear = nn.Linear(2, 3)
+        data0: UserData = UserData()
+        data1: UserData = UserData()
+        
+        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        
+        root_rand: TestModule = root.rand()
+        self.assertIsNot(root_rand, root)
+        self.assertIsNot(root_rand.param1, root.param1)
+        self.assertTrue(root_rand.param1.shape, root.param1.shape)
+        self.assertIs(root_rand.buffer1, root.buffer1)
+        self.assertIs(root_rand.data1, root.data1)
+        
+        sub_module_rand: TestSubModule = root_rand.sub_module
+        self.assertIsNot(sub_module_rand, sub_module)
+        self.assertIsNot(sub_module_rand.param0, sub_module.param0)
+        self.assertEqual(sub_module_rand.param0.shape, sub_module.param0.shape)
+        self.assertIs(sub_module_rand.buffer0, sub_module.buffer0)
+        self.assertIs(sub_module_rand.data0, sub_module.data0)
+        
+        self.assertIs(root_rand._particle_kernal, sub_module_rand._particle_kernal)
+        self.assertIsNot(root_rand._particle_kernal, root._particle_kernal)
+        self.assertIs(root_rand._version_kernal, root._version_kernal)
+        self.assertEqual(root_rand._module_id, root._module_id)
+        self.assertEqual(sub_module_rand._module_id, sub_module._module_id)   
+    
+    def test_rand_sub_module(self):
+        param0: nn.Parameter = nn.Parameter(torch.rand(2, 2))
+        param1: nn.Parameter = nn.Parameter(torch.rand(3, 3))
+        buffer0: torch.Tensor = torch.rand(1)
+        buffer1: torch.Tensor = torch.rand(1)
+        lin: nn.Linear = nn.Linear(2, 3)
+        data0: UserData = UserData()
+        data1: UserData = UserData()
+        
+        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        
+        sub_module_rand: TestSubModule = sub_module.rand()
+        self.assertIsNot(sub_module_rand, sub_module)
+        self.assertIsNot(sub_module_rand.param0, sub_module.param0)
+        self.assertTrue(sub_module_rand.param0.shape, sub_module.param0.shape)
+        self.assertIs(sub_module_rand.buffer0, sub_module.buffer0)
+        self.assertIs(sub_module_rand.data0, sub_module.data0)
+        
+        root_rand: TestModule = sub_module_rand._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        self.assertIsNot(root_rand, root)
+        self.assertIsNot(root_rand.param1, root.param1)
+        self.assertTrue(root_rand.param1.shape, root.param1.shape)
+        self.assertIs(root_rand.buffer1, root.buffer1)
+        self.assertIs(root_rand.data1, root.data1)
+        
+        self.assertIs(root_rand._particle_kernal, sub_module_rand._particle_kernal)
+        self.assertIsNot(root_rand._particle_kernal, root._particle_kernal)
+        self.assertIs(root_rand._version_kernal, root._version_kernal)
+        self.assertEqual(root_rand._module_id, root._module_id)
+        self.assertEqual(sub_module_rand._module_id, sub_module._module_id)
+
+
 class TestRandn(unittest.TestCase):
     def test_randn_root(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))

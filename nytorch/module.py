@@ -95,7 +95,7 @@ def product_assign_to_module(product: ParamProduct, module: Tmodule) -> None:
     Raises:
         AssertionError: If product.kernal is not module._version_kernal or if module._particle_kernal is None.
     """
-    assert product.kernal is module._version_kernal
+    assert product.kernal.version is module._version_kernal
     assert module._particle_kernal is not None
     pdata: ParticleDataImp = module._particle_kernal.data
     return pdata.assign(product.params)
