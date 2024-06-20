@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 setup(name='nytorch',
-      version="0.1",
+      version="1.0",
       author='jimmyzzzz',
       author_email='<sciencestudyjimmy@gmail.com>',
       description='Nytorch enhances PyTorch with advanced particle operations, seamlessly integrating new functionalities for effortless compatibility and enrichment.',
