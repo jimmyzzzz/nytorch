@@ -88,7 +88,7 @@ We use the MNIST dataset for demonstration, selecting only a subset for the exam
 
 Next, we define the model::
 
-    class Net(NytoModule):
+    class ConvNet(NytoModule):
         def __init__(self):
             super().__init__()
             self.conv1 = nn.Conv2d(1, 10, 5)
@@ -142,7 +142,6 @@ Next, we define the model::
                 pred = output.max(1, keepdim=True)[1]
                 correct = pred.eq(target.view_as(pred)).sum().item()
                 return loss, correct
-		            return loss, correct
 
 We also create a decorator for ConvNet called ConvModel, 
 which wraps the optimizer and training/testing methods. 
