@@ -1,16 +1,16 @@
 from __future__ import annotations
 from collections import OrderedDict
-from .kernal import ParticleData, ParticleKernal, VersionData, VersionKernal
+from .kernel import ParticleData, ParticleKernel, VersionData, VersionKernel
 from .mtype import ConfigDict, MetaDict, Module, ModuleDict, ModuleID, ModuleMeta, ParamDict, ParamID, ParamType, ROOT_MODULE_ID
 from .utils import copy_modules, make_modules_ref
 from typing import Optional, Type
 
 
-VersionKernalImp = VersionKernal['VersionDataImp', 'ParticleDataImp']
-ParticleKernalImp = ParticleKernal['VersionDataImp', 'ParticleDataImp']
+VersionKernelImp = VersionKernel['VersionDataImp', 'ParticleDataImp']
+ParticleKernelImp = ParticleKernel['VersionDataImp', 'ParticleDataImp']
 
 
-def create_new_group(ref: Module) -> ParticleKernalImp:
+def create_new_group(ref: Module) -> ParticleKernelImp:
     """
     Create a new version kernel and a new particle kernel.
 
@@ -23,15 +23,15 @@ def create_new_group(ref: Module) -> ParticleKernalImp:
         ref (Module): The reference module to base the new group on.
 
     Returns:
-        ParticleKernalImp: The created particle kernel.
+        ParticleKernelImp: The created particle kernel.
     """
     assert len(list(ref.children())) == 0
     assert len(list(ref.parameters())) == 0
-    version_kernal: VersionKernalImp = VersionKernal(VersionDataImp(OrderedDict([(ROOT_MODULE_ID,
+    version_kernel: VersionKernelImp = VersionKernel(VersionDataImp(OrderedDict([(ROOT_MODULE_ID,
                                                                                   ModuleMeta(OrderedDict(),
                                                                                              OrderedDict()))]),
                                                                     OrderedDict()))
-    return ParticleKernal(version_kernal,
+    return ParticleKernel(version_kernel,
                           ParticleDataImp(OrderedDict([(ROOT_MODULE_ID, ref)]),
                                           OrderedDict()))
 
@@ -44,12 +44,12 @@ class NytoModuleBase(Module):
     Attributes:
         _module_id (ModuleID): 
             ID of the module.
-        _particle_kernel (Optional[ParticleKernalImp]): 
+        _particle_kernel (Optional[ParticleKernelImp]): 
             Points to the particle kernel; set to None when wrapped by ParticleModule.
     """
     
     _module_id: ModuleID
-    _particle_kernal: Optional[ParticleKernalImp]
+    _particle_kernel: Optional[ParticleKernelImp]
     
     def __init__(self) -> None:
         """
@@ -57,21 +57,21 @@ class NytoModuleBase(Module):
         """
         super().__init__()
         self._module_id = 0
-        self._particle_kernal = create_new_group(self)
+        self._particle_kernel = create_new_group(self)
     
     @property
-    def _version_kernal(self) -> VersionKernalImp:
+    def _version_kernel(self) -> VersionKernelImp:
         """
         The version kernel pointed by the particle kernel.
 
         Returns:
-            VersionKernalImp: The version kernel.
+            VersionKernelImp: The version kernel.
         
         Raises:
-            AssertionError: If `_particle_kernal` is None.
+            AssertionError: If `_particle_kernel` is None.
         """
-        assert self._particle_kernal is not None
-        return self._particle_kernal.version
+        assert self._particle_kernel is not None
+        return self._particle_kernel.version
     
     @property
     def is_root(self) -> bool:
@@ -130,7 +130,7 @@ class VersionDataImp(VersionData['VersionDataImp', 'ParticleDataImp']):
     def __repr__(self) -> str:
         return f"VersionDataImp(meta={self.meta}, config={self.config})"
     
-    def init_kernal(self, kernal: VersionKernal) -> None:
+    def init_kernel(self, kernel: VersionKernel) -> None:
         return
     
     def init_particle(self, pdata: ParticleDataImp) -> None:
@@ -226,7 +226,7 @@ class ParticleDataImp(ParticleData["VersionDataImp", "ParticleDataImp"]):
     Implementation of ParticleData.
 
     This class stores references to all parameters of corresponding particles and is accessed when particles undergo particle operations. 
-    Instances are stored in `ParticleKernal.data`.
+    Instances are stored in `ParticleKernel.data`.
 
     Args:
         modules (ModuleDict): 
@@ -262,10 +262,10 @@ class ParticleDataImp(ParticleData["VersionDataImp", "ParticleDataImp"]):
     def __repr__(self) -> str:
         return f"ParticleDataImp(modules={self.modules}, params={self.params})"
         
-    def init_kernal(self, kernal: ParticleKernal) -> None:
+    def init_kernel(self, kernel: ParticleKernel) -> None:
         for mod in self.modules.values():
             if isinstance(mod, NytoModuleBase):
-                mod._particle_kernal = kernal
+                mod._particle_kernel = kernel
                 
     def copy(self, vdata: VersionDataImp) -> ParticleDataImp:
         return self.create(vdata, self.params)

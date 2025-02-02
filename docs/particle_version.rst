@@ -88,7 +88,7 @@ We can access the version instance pointed to by a particle using ``_version_ker
     net1 = Linear(1, 2)
     net2 = net1.randn()
     
-    version_before_del = net1._version_kernal
+    version_before_del = net1._version_kernel
    
 When the metadata is modified,
 the system records relevant information and saves it to a version instance.
@@ -96,7 +96,7 @@ Simultaneously, a new version instance is created as the latest version::
 
 	del net1.weight
 
-	version_after_del = net1._version_kernal
+	version_after_del = net1._version_kernel
 	
 ::
 
@@ -108,7 +108,7 @@ At this point, we observe that the metadata of ``net1`` has changed, and the ver
 	>>> hasattr(net2, 'weight')
 	True
 
-	>>> version_before_del is net2._version_kernal
+	>>> version_before_del is net2._version_kernel
 	True
 
 To upgrade ``net2`` to the latest version, we can call the ``touch()`` method. Nytorch automatically updates the particle to the latest version based on the previously recorded modification information::
@@ -120,7 +120,7 @@ To upgrade ``net2`` to the latest version, we can call the ``touch()`` method. N
 	>>> hasattr(net2, 'weight')
 	False
 
-	>>> version_after_del is net2._version_kernal
+	>>> version_after_del is net2._version_kernel
 	True
 
 In practical use, frequent use of ``touch()`` is unnecessary because whenever a particle operation or metadata modification occurs, ``touch()`` is automatically invoked to ensure the particle is at the latest version.

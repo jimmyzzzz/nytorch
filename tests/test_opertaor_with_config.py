@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from nytorch.module import ParamProduct
 from nytorch.mtype import ParamType, ParamConfig

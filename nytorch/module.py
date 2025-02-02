@@ -1,8 +1,8 @@
 from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Iterable
-from .base import NytoModuleBase, ParticleDataImp, ParticleKernalImp, VersionDataImp
-from .kernal import Particle, ParticleData, ParticleUpdater, Product, VersionData, VersionUpdater
+from .base import NytoModuleBase, ParticleDataImp, ParticleKernelImp, VersionDataImp
+from .kernel import Particle, ParticleData, ParticleUpdater, Product, VersionData, VersionUpdater
 from .mtype import ConfigDict, MetaDict, Module, ModuleDict, ModuleID, ModuleMeta, ParamConfig, ParamDict, ParamID, ParamType, ROOT_MODULE_ID
 from .version_updater import AddModuleVersionUpdater, AddParamVersionUpdater, DelBufferVersionUpdater, DelModuleVersionUpdater, DelParamVersionUpdater, SetModuleNoneVersionUpdater, SetParamNoneVersionUpdater, RegisterBufferVersionUpdater
 from torch import nn
@@ -60,11 +60,11 @@ def module_to_product(module: Tmodule) -> ParamProduct:
         ParamProduct: The corresponding ParamProduct instance.
     
     Raises:
-        AssertionError: If module._particle_kernal is None.
+        AssertionError: If module._particle_kernel is None.
     """
-    assert module._particle_kernal is not None
-    pdata: ParticleDataImp = module._particle_kernal.data
-    return ParamProduct(module._particle_kernal, module._module_id, pdata.params)
+    assert module._particle_kernel is not None
+    pdata: ParticleDataImp = module._particle_kernel.data
+    return ParamProduct(module._particle_kernel, module._module_id, pdata.params)
 
 
 def product_to_module(product: ParamProduct) -> Module:
@@ -78,7 +78,7 @@ def product_to_module(product: ParamProduct) -> Module:
         Module: The corresponding NytoModule instance.
     """
     new_data: ParticleDataImp = product.pdata.create(product.vdata, product.params)
-    new_particle: ParticleKernalImp = product.kernal.create(new_data)
+    new_particle: ParticleKernelImp = product.kernel.create(new_data)
     return new_particle.data.modules[product.module_id]
 
 
@@ -93,11 +93,11 @@ def product_assign_to_module(product: ParamProduct, module: Tmodule) -> None:
             The NytoModule instance to assign parameters to.
     
     Raises:
-        AssertionError: If product.kernal is not module._version_kernal or if module._particle_kernal is None.
+        AssertionError: If product.kernel is not module._version_kernel or if module._particle_kernel is None.
     """
-    assert product.kernal.version is module._version_kernal
-    assert module._particle_kernal is not None
-    pdata: ParticleDataImp = module._particle_kernal.data
+    assert product.kernel.version is module._version_kernel
+    assert module._particle_kernel is not None
+    pdata: ParticleDataImp = module._particle_kernel.data
     return pdata.assign(product.params)
 
 
@@ -108,7 +108,7 @@ class ParamProduct(Product[Tmodule]):
     Implements particle operations and transformation to NytoModule.
 
     Args:
-        kernal (ParticleKernalImp): 
+        kernel (ParticleKernelImp): 
             Reference to the particle kernel.
         module_id (ModuleID): 
             Specifies which module to return when transforming to NytoModule.
@@ -116,7 +116,7 @@ class ParamProduct(Product[Tmodule]):
             Model parameters for particle operations.
             
     Attributes:
-        kernal (ParticleKernalImp): 
+        kernel (ParticleKernelImp): 
             Reference to the particle kernel.
         module_id (ModuleID): 
             Specifies which module to return when transforming to NytoModule.
@@ -124,18 +124,18 @@ class ParamProduct(Product[Tmodule]):
             Model parameters for particle operations.
     """
     
-    __slots__ = "kernal", "module_id", "params"
+    __slots__ = "kernel", "module_id", "params"
     
-    kernal: ParticleKernalImp
+    kernel: ParticleKernelImp
     module_id: ModuleID
     params: ParamDict
 
-    def __init__(self, kernal: ParticleKernalImp, module_id: ModuleID, params: ParamDict) -> None:
+    def __init__(self, kernel: ParticleKernelImp, module_id: ModuleID, params: ParamDict) -> None:
         """
-        Initialize ParamProduct with kernal, module_id, and params.
+        Initialize ParamProduct with kernel, module_id, and params.
 
         Args:
-            kernal (ParticleKernalImp): 
+            kernel (ParticleKernelImp): 
                 Reference to the particle kernel.
             module_id (ModuleID): 
                 Specifies which module to return when transforming to NytoModule.
@@ -143,7 +143,7 @@ class ParamProduct(Product[Tmodule]):
                 Model parameters for particle operations.
         """
 
-        self.kernal = kernal
+        self.kernel = kernel
         self.module_id = module_id
         self.params = params
 
@@ -153,13 +153,13 @@ class ParamProduct(Product[Tmodule]):
     @property
     def vdata(self) -> VersionDataImp:
         """Version data of the particle."""
-        vdata: VersionDataImp = self.kernal.version.data
+        vdata: VersionDataImp = self.kernel.version.data
         return vdata
 
     @property
     def pdata(self) -> ParticleDataImp:
         """Parameter data of the particle."""
-        pdata: ParticleDataImp = self.kernal.data
+        pdata: ParticleDataImp = self.kernel.data
         return pdata
 
     def particle(self) -> Tmodule:  # type: ignore
@@ -210,7 +210,7 @@ class ParamProduct(Product[Tmodule]):
                 (pid, fn(p, pconf)) for (pid, p), pconf in zip(
                     self.params.items(),
                     self.vdata.config.values()))
-            return ParamProduct(self.kernal, self.module_id, new_params)
+            return ParamProduct(self.kernel, self.module_id, new_params)
 
     def binary_operator(self,
                         other: ParamProduct,
@@ -229,7 +229,7 @@ class ParamProduct(Product[Tmodule]):
             ParamProduct: New ParamProduct instance after the binary operation.
 
         Raises:
-            AssertionError: If other.kernal.version is not self.kernal.version.
+            AssertionError: If other.kernel.version is not self.kernel.version.
         
         .. note::
             
@@ -242,7 +242,7 @@ class ParamProduct(Product[Tmodule]):
             The source of ``other`` must belong to the same species as ``self``,
             which can be checked as follows::
             
-                assert other.kernal.version is self.kernal.version
+                assert other.kernel.version is self.kernel.version
         
         Example::
         
@@ -265,14 +265,14 @@ class ParamProduct(Product[Tmodule]):
             tensor([-5., -3., -1.], requires_grad=True)
         """
         assert isinstance(other, ParamProduct)
-        assert self.kernal.version is other.kernal.version
+        assert self.kernel.version is other.kernel.version
         with torch.no_grad():
             new_params: ParamDict = OrderedDict(
                 (pid, fn(lp, rp, pconf)) for (pid, lp), rp, pconf in zip(
                     self.params.items(),
                     other.params.values(),
                     self.vdata.config.values()))
-            return ParamProduct(self.kernal, self.module_id, new_params)
+            return ParamProduct(self.kernel, self.module_id, new_params)
 
     def __neg__(self) -> ParamProduct:
         return self.unary_operator(unary_lambda_wrapper(lambda p: -p))
@@ -472,9 +472,9 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
     
     def __setattr__(self: Tmodule, name: str, value: Any) -> None:
         if isinstance(value, NytoModuleBase):
-            if self._particle_kernal is value._particle_kernal and value._module_id == ROOT_MODULE_ID:
+            if self._particle_kernel is value._particle_kernel and value._module_id == ROOT_MODULE_ID:
                 warnings.warn("circular references to the root module")
-            if self._particle_kernal is not value._particle_kernal and value._module_id != ROOT_MODULE_ID:
+            if self._particle_kernel is not value._particle_kernel and value._module_id != ROOT_MODULE_ID:
                 warnings.warn("modules from different particles refer to the same module")
 
         if isinstance(value, ParamType):
@@ -525,8 +525,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             Linear(in_features=2, out_features=3, bias=True)
         """
         assert isinstance(module, Module)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             AddModuleVersionUpdater(self._module_id, attr_name, module))
 
     def _version_add_param(self, attr_name: str, param: ParamType) -> None:
@@ -554,8 +554,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
                     [-1.1099, -0.9068]], requires_grad=True)
         """
         assert isinstance(param, ParamType)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             AddParamVersionUpdater(self._module_id, attr_name, param))
 
     def _version_register_buffer(self, attr_name: str, value: Optional[torch.Tensor], persistent: bool) -> None:
@@ -585,8 +585,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
         """
         if value is not None:
             assert isinstance(value, torch.Tensor)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             RegisterBufferVersionUpdater(self._module_id, attr_name, value, persistent))
 
     def _version_del_module(self, attr_name: str) -> None:
@@ -609,8 +609,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             False
         """
         assert isinstance(attr_name, str)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             DelModuleVersionUpdater(self._module_id, attr_name))
 
     def _version_del_param(self, attr_name: str) -> None:
@@ -633,8 +633,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             False
         """
         assert isinstance(attr_name, str)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             DelParamVersionUpdater(self._module_id, attr_name))
 
     def _version_del_buffer(self, attr_name: str) -> None:
@@ -657,8 +657,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             False
         """
         assert isinstance(attr_name, str)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             DelBufferVersionUpdater(self._module_id, attr_name))
 
     def _version_set_none_module(self, attr_name: str) -> None:
@@ -681,8 +681,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             True
         """
         assert isinstance(attr_name, str)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             SetModuleNoneVersionUpdater(self._module_id, attr_name))
 
     def _version_set_none_param(self, attr_name: str) -> None:
@@ -705,8 +705,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             True
         """
         assert isinstance(attr_name, str)
-        assert self._particle_kernal is not None
-        self._particle_kernal.version_update(
+        assert self._particle_kernel is not None
+        self._particle_kernel.version_update(
             SetParamNoneVersionUpdater(self._module_id, attr_name))
 
     def clone_from(self: Tmodule, source: Module) -> Tmodule:
@@ -726,10 +726,10 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             net2 = Net()
             net3 = net1.clone_from(net2)
             
-            >>> net1._version_kernal is net2._version_kernal
+            >>> net1._version_kernel is net2._version_kernel
             False
             
-            >>> net1._version_kernal is net3._version_kernal
+            >>> net1._version_kernel is net3._version_kernel
             True
             
             >>> net1.my_param is net3.my_param
@@ -752,15 +752,15 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             net1 = Net()
             net2 = net1.detach()
             
-            >>> net1._version_kernal is net2._version_kernal
+            >>> net1._version_kernel is net2._version_kernel
             False 
             
             >>> net1.my_param is net2.my_param
             True
         """
-        assert self._particle_kernal is not None
+        assert self._particle_kernel is not None
         self.touch()
-        pdata: ParticleDataImp = self._particle_kernal.detach().data
+        pdata: ParticleDataImp = self._particle_kernel.detach().data
         module: Module = pdata.modules[self._module_id]
         assert isinstance(module, type(self))
         return module
@@ -786,9 +786,9 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             True
         """
         
-        assert self._particle_kernal is not None
-        if not self._version_kernal.is_newest:
-            self._particle_kernal.particle_update()
+        assert self._particle_kernel is not None
+        if not self._version_kernel.is_newest:
+            self._particle_kernel.particle_update()
         return self
 
     def product(self: Tmodule) -> ParamProduct:
@@ -836,7 +836,7 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             net = Net()
             net.apply_param_config(set_operational_false, "my_module")
         """
-        vdata: VersionDataImp = self._version_kernal.data
+        vdata: VersionDataImp = self._version_kernel.data
         if name is None:
             return  _apply_module_config(vdata, self._module_id, fn)
         if self._modules.get(name, None) is not None:
@@ -902,8 +902,8 @@ class NytoModule(NytoModuleBase, Particle[ParamProduct]):
             >>> net.get_param_id(net.my_param)
             2
         """
-        assert self._particle_kernal is not None
-        for pid, param in self._particle_kernal.data.params.items():
+        assert self._particle_kernel is not None
+        for pid, param in self._particle_kernel.data.params.items():
             if param is target_param:
                 return pid
         raise ValueError(f"can not found param: {target_param}")

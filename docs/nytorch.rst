@@ -9,10 +9,10 @@ nytorch.base module
    :undoc-members:
    :show-inheritance:
 
-nytorch.kernal module
+nytorch.kernel module
 ---------------------
 
-.. automodule:: nytorch.kernal
+.. automodule:: nytorch.kernel
    :members:
    :undoc-members:
    :show-inheritance:

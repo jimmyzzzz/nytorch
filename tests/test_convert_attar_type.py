@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from torch import nn
 import unittest
@@ -13,52 +13,52 @@ class TestConvertParam(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
 
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception): 
             module.param0 = nn.Linear(2, 3)
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
             
     def test_param_to_buffer(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception): 
             module.register_buffer("param0", torch.randn(1))
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
         
     def test_param_to_value(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
 
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception):
             module.param0 = UserData()
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
         
     def test_param_to_none(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
 
         module.param0 = None
         
@@ -78,7 +78,7 @@ class TestConvertModule(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
         other_param: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         module.lin = other_param
@@ -97,37 +97,37 @@ class TestConvertModule(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception): 
             module.register_buffer("lin", torch.randn(1))
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
         
     def test_module_to_value(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception): 
             module.lin = UserData()
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
         
     def test_module_to_none(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
 
         module.lin = None
         
@@ -147,7 +147,7 @@ class TestConvertBuffer(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
         other_lin: nn.Linear = nn.Linear(2, 3)
         module.buffer0 = other_lin
@@ -166,7 +166,7 @@ class TestConvertBuffer(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
         other_param: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         module.buffer0 = other_param
@@ -185,22 +185,22 @@ class TestConvertBuffer(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception): 
             module.buffer0 = UserData()
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)
         
     def test_buffer_to_none(self):
         param0: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
 
         module.buffer0 = None
         
@@ -220,7 +220,7 @@ class TestConvertValue(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
         other_lin: nn.Linear = nn.Linear(2, 3)
         module.data0 = other_lin
@@ -239,7 +239,7 @@ class TestConvertValue(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
         other_param: nn.Parameter = nn.Parameter(torch.randn(2, 2))
         module.data0 = other_param
@@ -258,12 +258,12 @@ class TestConvertValue(unittest.TestCase):
         buffer0: torch.Tensor = torch.randn(1)
         lin: nn.Linear = nn.Linear(2, 3)
         data0: UserData = UserData()
-        module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
+        module: MySubModule = MySubModule(param0, lin, buffer0, data0)
         
-        vkernal: nyto.kernal.VersionKernal = module._version_kernal
-        self.assertTrue(vkernal.is_newest)
+        vkernel: nyto.kernel.VersionKernel = module._version_kernel
+        self.assertTrue(vkernel.is_newest)
         
         with self.assertRaises(Exception):
             module.register_buffer("data0", torch.randn(1))
             
-        self.assertIs(module._version_kernal, vkernal)
+        self.assertIs(module._version_kernel, vkernel)

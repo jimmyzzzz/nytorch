@@ -1,6 +1,6 @@
 from __future__ import annotations
-from nytorch.base import NytoModuleBase, ParticleKernalImp
-from nytorch.kernal import Particle, Product
+from nytorch.base import NytoModuleBase, ParticleKernelImp
+from nytorch.kernel import Particle, Product
 from nytorch.module import NytoModule, ParamProduct, Tmodule
 from nytorch.mtype import ModuleID, ParamConfig, ParamDict, ParamType, ROOT_MODULE_ID
 import torch.nn as nn
@@ -14,7 +14,7 @@ class PMProduct(Product['ParticleModule']):
     Implements particle operations and transforms into ParticleModule.
 
     Args:
-        kernal (ParticleKernalImp): 
+        kernel (ParticleKernelImp): 
             Particle kernel instance.
         module_id (ModuleID): 
             ID of the module.
@@ -37,16 +37,16 @@ class PMProduct(Product['ParticleModule']):
         Returns:
             PMProduct: Wrapped PMProduct instance.
         """
-        return PMProduct(product.kernal, 
+        return PMProduct(product.kernel, 
                          product.module_id, 
                          product.params)
     
-    def __init__(self, kernal: ParticleKernalImp, module_id: ModuleID, params: ParamDict) -> None:
+    def __init__(self, kernel: ParticleKernelImp, module_id: ModuleID, params: ParamDict) -> None:
         r"""
         Not recommended to create manually, please use ParticleModule.product for generation.
 
         Args:
-            kernal (ParticleKernalImp): 
+            kernel (ParticleKernelImp): 
                 Particle kernel instance.
             module_id (ModuleID): 
                 ID of the module.
@@ -64,7 +64,7 @@ class PMProduct(Product['ParticleModule']):
             net = ParticleModule(Net())
             product = net.product()
         """
-        self.product : ParamProduct = ParamProduct(kernal, 
+        self.product : ParamProduct = ParamProduct(kernel, 
                                                    module_id,
                                                    params)
     
@@ -134,7 +134,7 @@ class PMProduct(Product['ParticleModule']):
             The source of ``other`` must belong to the same species as the source of ``self``,
             which can be checked as follows::
             
-                assert other.product.kernal.version is self.product.kernal.version
+                assert other.product.kernel.version is self.product.kernel.version
         
         Example::
         
@@ -234,15 +234,15 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         root_module (Tmodule): The NytoModule instance to be wrapped.
 
     Attributes:
-        particle_kernal (ParticleKernalImp): 
+        particle_kernel (ParticleKernelImp): 
             Reference to the particle kernel for restoring the module's reference.
         root_module (Tmodule): 
             The root NytoModule being wrapped.
     """
     
-    __slots__ = "particle_kernal", "root_module"
+    __slots__ = "particle_kernel", "root_module"
     
-    particle_kernal: ParticleKernalImp
+    particle_kernel: ParticleKernelImp
     root_module: Tmodule
     
     def __init__(self, root_module: Tmodule) -> None:
@@ -254,14 +254,14 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         """
         assert isinstance(root_module, NytoModule)
         assert root_module._module_id == ROOT_MODULE_ID
-        assert root_module._particle_kernal is not None
+        assert root_module._particle_kernel is not None
         
         super().__init__()
-        self.particle_kernal = root_module._particle_kernal
+        self.particle_kernel = root_module._particle_kernel
         self.root_module = root_module
-        self.clear_kernal_ref()
+        self.clear_kernel_ref()
     
-    def clear_kernal_ref(self) -> None:
+    def clear_kernel_ref(self) -> None:
         """
         Clears the module's reference to the particle kernel.
 
@@ -269,9 +269,9 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         """
         for submodule in self.root_module.modules():
             if isinstance(submodule, NytoModuleBase):
-                submodule._particle_kernal = None
+                submodule._particle_kernel = None
                 
-    def restore_kernal_ref(self) -> None:
+    def restore_kernel_ref(self) -> None:
         """
         Restores the module's reference to the particle kernel.
 
@@ -279,7 +279,7 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         """
         for submodule in self.root_module.modules():
             if isinstance(submodule, NytoModuleBase):
-                submodule._particle_kernal = self.particle_kernal
+                submodule._particle_kernel = self.particle_kernel
                 
     def forward(self, *args, **kwargs):
         """
@@ -303,9 +303,9 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         Returns:
             PMProduct: A PMProduct instance representing the module.
         """
-        return PMProduct(self.particle_kernal, 
+        return PMProduct(self.particle_kernel, 
                          ROOT_MODULE_ID, 
-                         self.particle_kernal.data.params)
+                         self.particle_kernel.data.params)
     
     def product_(self, product: PMProduct) -> Self:
         """
@@ -317,9 +317,9 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         Returns:
             ParticleModule: The ParticleModule instance with imported parameters.
         """
-        self.restore_kernal_ref()
+        self.restore_kernel_ref()
         self.root_module.product_(product.product)
-        self.clear_kernal_ref()
+        self.clear_kernel_ref()
         return self
     
     def clone_from(self, source: ParticleModule) -> ParticleModule:

@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from torch import nn
 import unittest
@@ -58,11 +58,11 @@ class TestAddAttar(unittest.TestCase):
         root_randn: RootModule = root.randn()
         root_detach: RootModule = root.detach()
         
-        root.lin0: TestSubModule = TestSubModule(param=nn.Parameter(torch.randn(2, 2)),
+        root.lin0: MySubModule = MySubModule(param=nn.Parameter(torch.randn(2, 2)),
                                                  lin=nn.Linear(3, 2),
                                                  buffer=torch.randn(1),
                                                  data=UserData())
-        root.sub_module.lin1: TestSubModule = TestSubModule(param=nn.Parameter(torch.randn(2, 2)),
+        root.sub_module.lin1: MySubModule = MySubModule(param=nn.Parameter(torch.randn(2, 2)),
                                                             lin=nn.Linear(3, 2),
                                                             buffer=torch.randn(1),
                                                             data=UserData())

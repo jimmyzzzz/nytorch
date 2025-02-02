@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from nytorch.module import ParamProduct
 from torch import nn
@@ -18,8 +18,8 @@ class TestProductConvert(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
         root_product: ParamProduct = root.product()
         param_set: set[nn.Parameter] = {param0, param1, lin.weight, lin.bias}
@@ -50,15 +50,15 @@ class TestProductConvert(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
         sub_module_product: ParamProduct = sub_module.product()
         param_set: set[nn.Parameter] = {param0, param1, lin.weight, lin.bias}
         self.assertEqual(param_set, set(sub_module_product.params.values()))
         
         sub_module_copy: RootModule = sub_module_product.module()
-        root_copy: RootModule = sub_module_copy._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        root_copy: RootModule = sub_module_copy._particle_kernel.data.modules[nyto.mtype.ROOT_MODULE_ID]
         
         self.assertIsNot(root, root_copy)
         self.assertTrue(torch.equal(root.param1, root_copy.param1))

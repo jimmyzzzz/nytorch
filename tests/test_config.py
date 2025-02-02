@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from nytorch.module import ParamProduct
 from nytorch.mtype import ModuleID, ParamConfig, ParamDict, ParamType
@@ -18,8 +18,8 @@ def create_new_root() -> NytoModule:
     data0: UserData = UserData()
     data1: UserData = UserData()
 
-    sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-    root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+    sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+    root: MyModule = MyModule(param1, sub_module, buffer1, data1)
     
     return root
 

@@ -1,5 +1,5 @@
 
-from nytorch import kernal
+from nytorch import kernel
 from nytorch import mtype
 from nytorch import utils
 from nytorch import base

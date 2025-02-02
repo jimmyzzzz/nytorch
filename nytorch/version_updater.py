@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections import ChainMap, OrderedDict
 from collections.abc import Iterable
 from .base import ParticleDataImp, VersionDataImp
-from .kernal import ParticleData, ParticleUpdater, VersionData, VersionUpdater
+from .kernel import ParticleData, ParticleUpdater, VersionData, VersionUpdater
 from .mtype import ConfigDict, MetaDict, Module, ModuleDict, ModuleID, ModuleMeta, ParamConfig, ParamDict, ParamID, ParamType
 from .particle_updater import AddModuleParticleUpdater, AddParamParticleUpdater, DelBufferParticleUpdater, DelModuleParticleUpdater, DelParamParticleUpdater, RegisterBufferParticleUpdater, SetModuleNoneParticleUpdater, SetParamNoneParticleUpdater
 from typing import Generic, Optional, TypeVar
@@ -12,7 +12,7 @@ import torch
 
 class AddModuleVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
     r"""
-    Updater for VersionKernal instances that adds a module to a particle.
+    Updater for VersionKernel instances that adds a module to a particle.
 
     This class facilitates the addition of a module to a particle by updating both version and particle data.
 
@@ -44,8 +44,8 @@ class AddModuleVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
         
         net0 = MyNet()
         net1 = MyNet()
-        particle_kernal: ParticleKernal = net0._particle_kernal
-        particle_kernal.version_update(AddModuleVersionUpdater(net0._module_id, 
+        particle_kernel: ParticleKernel = net0._particle_kernel
+        particle_kernel.version_update(AddModuleVersionUpdater(net0._module_id, 
                                                                "attar_net1", 
                                                                net1))
         
@@ -156,7 +156,7 @@ class AddModuleVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
 
 class AddParamVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
     r"""
-    Updater for VersionKernal instances that adds a parameter to a particle.
+    Updater for VersionKernel instances that adds a parameter to a particle.
 
     Args:
         module_id (ModuleID): 
@@ -185,8 +185,8 @@ class AddParamVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
         net = MyNet()
         add_param = torch.nn.Parameter(torch.randn(3, 3))
 
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(AddParamVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(AddParamVersionUpdater(net._module_id, 
                                                               "attar_add_param", 
                                                               add_param))
         
@@ -278,7 +278,7 @@ class AddParamVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
 
 class RegisterBufferVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
     r"""
-    Updater for VersionKernal instances that registers a buffer to a particle.
+    Updater for VersionKernel instances that registers a buffer to a particle.
 
     Args:
         module_id (ModuleID): 
@@ -308,8 +308,8 @@ class RegisterBufferVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataIm
         net = MyNet()
         add_tensor = torch.randn(3, 3)
 
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(RegisterBufferVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(RegisterBufferVersionUpdater(net._module_id, 
                                                                     "attar_add_tensor", 
                                                                     add_tensor))
         
@@ -372,7 +372,7 @@ class RegisterBufferVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataIm
 
 class SetModuleNoneVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
     r"""
-    Updater for VersionKernal instances that sets a module property in a particle to None.
+    Updater for VersionKernel instances that sets a module property in a particle to None.
 
     Args:
         module_id (ModuleID): 
@@ -393,8 +393,8 @@ class SetModuleNoneVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp
         
         net = MyNet()
         net.attar_module = MyNet()
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(SetModuleNoneVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(SetModuleNoneVersionUpdater(net._module_id, 
                                                                    "attar_module"))
         
         >>> net.attar_module is None
@@ -462,8 +462,8 @@ class SetParamNoneVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]
         
         net = MyNet()
         net.attar_param = torch.nn.Parameter(torch.randn(3, 3))
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(SetParamNoneVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(SetParamNoneVersionUpdater(net._module_id, 
                                                                   "attar_param"))
         
         >>> net.attar_param is None
@@ -530,8 +530,8 @@ class DelModuleVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
         
         net = MyNet()
         net.attar_moduel = MyNet()
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(DelModuleVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(DelModuleVersionUpdater(net._module_id, 
                                                                "attar_moduel"))
         
         >>> hasattr(net, "attar_moduel")
@@ -597,8 +597,8 @@ class DelParamVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
         
         net = MyNet()
         net.attar_param = torch.nn.Parameter(torch.randn(3, 3))
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(DelParamVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(DelParamVersionUpdater(net._module_id, 
                                                               "attar_moduel"))
         
         >>> hasattr(net, "attar_param")
@@ -661,8 +661,8 @@ class DelBufferVersionUpdater(VersionUpdater[VersionDataImp, ParticleDataImp]):
         
         net = MyNet()
         net.register_buffer("attar_buffer", torch.randn(3, 3))
-        particle_kernal: ParticleKernal = net._particle_kernal
-        particle_kernal.version_update(DelParamVersionUpdater(net._module_id, 
+        particle_kernel: ParticleKernel = net._particle_kernel
+        particle_kernel.version_update(DelParamVersionUpdater(net._module_id, 
                                                               "attar_buffer"))
         
         >>> hasattr(net, "attar_buffer")
