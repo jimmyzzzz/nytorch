@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections import OrderedDict
 from .base import NytoModuleBase, ParticleDataImp, VersionDataImp
-from .kernal import ParticleData, ParticleKernal, ParticleUpdater, VersionData
+from .kernel import ParticleData, ParticleKernel, ParticleUpdater, VersionData
 from .mtype import ConfigDict, MetaDict, Module, ModuleDict, ModuleID, ParamDict, ParamID, ParamType, ROOT_MODULE_ID
 from .utils import copy_modules, clone_param, clone_params, make_modules_ref
 from typing import Optional
@@ -86,7 +86,7 @@ class AddModuleParticleUpdater(ParticleUpdater[VersionDataImp, ParticleDataImp])
         for mid, mod in pdata.modules.items():
             if isinstance(mod, NytoModuleBase):
                 mod._module_id = mid
-                mod._particle_kernal = root_module._particle_kernal
+                mod._particle_kernel = root_module._particle_kernel
                 
 
 class AddParamParticleUpdater(ParticleUpdater[VersionDataImp, ParticleDataImp]):

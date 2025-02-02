@@ -5,7 +5,7 @@ Using NytoModule, creating a module automatically updates its version. The under
 
 However, this feature is not commonly used, and for the sake of such functionality, there is a sacrifice in performance.
 
-.. image:: ./image/particle_kernal.png
+.. image:: ./image/particle_kernel.png
 		:width: 500
 
 From the particle structure diagram, a circular reference structure can be observed, which can cause memory pressure for programming languages like Python that use garbage collection. We can conduct a simple experiment to observe the process from initializing a particle to reclaiming it in Python::
@@ -114,22 +114,22 @@ Below is part of the code for ParticleModule, which shows that ParticleModule is
         def __init__(self, root_module: Tmodule) -> None:
             ...
             super().__init__()
-            self.particle_kernal: ParticleKernalImp = root_module._particle_kernal
+            self.particle_kernel: ParticleKernelImp = root_module._particle_kernel
             self.root_module: Tmodule = root_module
-            self.clear_kernal_ref()
+            self.clear_kernel_ref()
         
         def forward(self, *args, **kwargs):
             return self.root_module(*args, **kwargs)
             
-        def clear_kernal_ref(self) -> None:
+        def clear_kernel_ref(self) -> None:
             for submodule in self.root_module.modules():
                 if isinstance(submodule, NytoModuleBase):
-                    submodule._particle_kernal = None
+                    submodule._particle_kernel = None
                 
-        def restore_kernal_ref(self) -> None:
+        def restore_kernel_ref(self) -> None:
             for submodule in self.root_module.modules():
                 if isinstance(submodule, NytoModuleBase):
-                    submodule._particle_kernal = self.particle_kernal
+                    submodule._particle_kernel = self.particle_kernel
             
         ...
 
@@ -178,14 +178,14 @@ You can access the original model through the ``root_module`` attribute::
       (layer2): Linear(in_features=12, out_features=3, bias=True)
     )
 
-However, it's recommended not to perform any direct operations on the original model since the reference to the particle kernel has been cleared. If necessary, you can restore the reference to the particle kernel using the ``restore_kernal_ref()`` method and clear the reference using the ``clear_kernal_ref()`` method::
+However, it's recommended not to perform any direct operations on the original model since the reference to the particle kernel has been cleared. If necessary, you can restore the reference to the particle kernel using the ``restore_kernel_ref()`` method and clear the reference using the ``clear_kernel_ref()`` method::
 
-    >>> net.restore_kernal_ref()
-    >>> net.root_module._particle_kernal is None
+    >>> net.restore_kernel_ref()
+    >>> net.root_module._particle_kernel is None
     False
     
-    net.clear_kernal_ref()
-    >>> net.root_module._particle_kernal is None
+    net.clear_kernel_ref()
+    >>> net.root_module._particle_kernel is None
     True
 
 
@@ -449,7 +449,7 @@ Using ParticleModule::
     class MyPMProduct(PMProduct):
         @classmethod
         def from_ParamProduct(cls, product: 'ParamProduct') -> PMProduct:
-            return MyPMProduct(product.kernal, 
+            return MyPMProduct(product.kernel, 
                                product.module_id, 
                                product.params)
 
@@ -469,9 +469,9 @@ Using ParticleModule::
             print(f"delete cnn={self.module_id}")   
 
         def product(self) -> MyPMProduct:
-            return MyPMProduct(self.particle_kernal, 
+            return MyPMProduct(self.particle_kernel, 
                                ROOT_MODULE_ID, 
-                               self.particle_kernal.data.params)
+                               self.particle_kernel.data.params)
 
     def particle_operation_loop10():
         net = MyParticleModule(CNN())

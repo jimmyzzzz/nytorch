@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from torch import nn
 import unittest
@@ -16,10 +16,10 @@ class TestInit(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        module: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        module: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        self.assertIs(module._particle_kernal, module.sub_module._particle_kernal)
+        self.assertIs(module._particle_kernel, module.sub_module._particle_kernel)
         self.assertNotEqual(module._module_id, module.sub_module._module_id)
         
         self.assertIs(module.param1, param1)
@@ -66,10 +66,10 @@ class TestInit2(unittest.TestCase):
         module.register_buffer("buffer1", buffer1)
         module.data1 = data1
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        module: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        module: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        self.assertIs(module._particle_kernal, module.sub_module._particle_kernal)
+        self.assertIs(module._particle_kernel, module.sub_module._particle_kernel)
         self.assertNotEqual(module._module_id, module.sub_module._module_id)
         
         self.assertIs(module.param1, param1)

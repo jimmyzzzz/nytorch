@@ -2,7 +2,7 @@ from collections import OrderedDict
 from nytorch import NytoModule
 from torch import nn
 from typing import Optional
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from unittest.mock import patch
 
 import numpy as np
@@ -23,26 +23,26 @@ class TestClone(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        root_clone: TestModule = root.clone()
+        root_clone: MyModule = root.clone()
         self.assertIsNot(root_clone, root)
         self.assertIsNot(root_clone.param1, root.param1)
         self.assertTrue(torch.equal(root_clone.param1, root.param1))
         self.assertIs(root_clone.buffer1, root.buffer1)
         self.assertIs(root_clone.data1, root.data1)
         
-        sub_module_clone: TestSubModule = root_clone.sub_module
+        sub_module_clone: MySubModule = root_clone.sub_module
         self.assertIsNot(sub_module_clone, sub_module)
         self.assertIsNot(sub_module_clone.param0, sub_module.param0)
         self.assertTrue(torch.equal(sub_module_clone.param0, sub_module.param0))
         self.assertIs(sub_module_clone.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_clone.data0, sub_module.data0)
         
-        self.assertIs(root_clone._particle_kernal, sub_module_clone._particle_kernal)
-        self.assertIsNot(root_clone._particle_kernal, root._particle_kernal)
-        self.assertIs(root_clone._version_kernal, root._version_kernal)
+        self.assertIs(root_clone._particle_kernel, sub_module_clone._particle_kernel)
+        self.assertIsNot(root_clone._particle_kernel, root._particle_kernel)
+        self.assertIs(root_clone._version_kernel, root._version_kernel)
         self.assertEqual(root_clone._module_id, root._module_id)
         self.assertEqual(sub_module_clone._module_id, sub_module._module_id)
         
@@ -55,26 +55,26 @@ class TestClone(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        sub_module_clone: TestSubModule = sub_module.clone()
+        sub_module_clone: MySubModule = sub_module.clone()
         self.assertIsNot(sub_module_clone, sub_module)
         self.assertIsNot(sub_module_clone.param0, sub_module.param0)
         self.assertTrue(torch.equal(sub_module_clone.param0, sub_module.param0))
         self.assertIs(sub_module_clone.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_clone.data0, sub_module.data0)
         
-        root_clone: TestModule = sub_module_clone._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        root_clone: MyModule = sub_module_clone._particle_kernel.data.modules[nyto.mtype.ROOT_MODULE_ID]
         self.assertIsNot(root_clone, root)
         self.assertIsNot(root_clone.param1, root.param1)
         self.assertTrue(torch.equal(root_clone.param1, root.param1))
         self.assertIs(root_clone.buffer1, root.buffer1)
         self.assertIs(root_clone.data1, root.data1)
         
-        self.assertIs(root_clone._particle_kernal, sub_module_clone._particle_kernal)
-        self.assertIsNot(root_clone._particle_kernal, root._particle_kernal)
-        self.assertIs(root_clone._version_kernal, root._version_kernal)
+        self.assertIs(root_clone._particle_kernel, sub_module_clone._particle_kernel)
+        self.assertIsNot(root_clone._particle_kernel, root._particle_kernel)
+        self.assertIs(root_clone._version_kernel, root._version_kernel)
         self.assertEqual(root_clone._module_id, root._module_id)
         self.assertEqual(sub_module_clone._module_id, sub_module._module_id)
 
@@ -96,7 +96,7 @@ class TestCloneFrom(unittest.TestCase):
         root2 = MyRoot()
         
         root3 = root1.clone_from(root2)
-        self.assertIs(root1._version_kernal, root3._version_kernal)
+        self.assertIs(root1._version_kernel, root3._version_kernel)
         self.assertTrue(torch.equal(root3.param, root2.param))
         self.assertTrue(torch.equal(root3.submodule.param, root2.submodule.param))
 
@@ -111,26 +111,26 @@ class TestRand(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        root_rand: TestModule = root.rand()
+        root_rand: MyModule = root.rand()
         self.assertIsNot(root_rand, root)
         self.assertIsNot(root_rand.param1, root.param1)
         self.assertTrue(root_rand.param1.shape, root.param1.shape)
         self.assertIs(root_rand.buffer1, root.buffer1)
         self.assertIs(root_rand.data1, root.data1)
         
-        sub_module_rand: TestSubModule = root_rand.sub_module
+        sub_module_rand: MySubModule = root_rand.sub_module
         self.assertIsNot(sub_module_rand, sub_module)
         self.assertIsNot(sub_module_rand.param0, sub_module.param0)
         self.assertEqual(sub_module_rand.param0.shape, sub_module.param0.shape)
         self.assertIs(sub_module_rand.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_rand.data0, sub_module.data0)
         
-        self.assertIs(root_rand._particle_kernal, sub_module_rand._particle_kernal)
-        self.assertIsNot(root_rand._particle_kernal, root._particle_kernal)
-        self.assertIs(root_rand._version_kernal, root._version_kernal)
+        self.assertIs(root_rand._particle_kernel, sub_module_rand._particle_kernel)
+        self.assertIsNot(root_rand._particle_kernel, root._particle_kernel)
+        self.assertIs(root_rand._version_kernel, root._version_kernel)
         self.assertEqual(root_rand._module_id, root._module_id)
         self.assertEqual(sub_module_rand._module_id, sub_module._module_id)   
     
@@ -143,26 +143,26 @@ class TestRand(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        sub_module_rand: TestSubModule = sub_module.rand()
+        sub_module_rand: MySubModule = sub_module.rand()
         self.assertIsNot(sub_module_rand, sub_module)
         self.assertIsNot(sub_module_rand.param0, sub_module.param0)
         self.assertTrue(sub_module_rand.param0.shape, sub_module.param0.shape)
         self.assertIs(sub_module_rand.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_rand.data0, sub_module.data0)
         
-        root_rand: TestModule = sub_module_rand._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        root_rand: MyModule = sub_module_rand._particle_kernel.data.modules[nyto.mtype.ROOT_MODULE_ID]
         self.assertIsNot(root_rand, root)
         self.assertIsNot(root_rand.param1, root.param1)
         self.assertTrue(root_rand.param1.shape, root.param1.shape)
         self.assertIs(root_rand.buffer1, root.buffer1)
         self.assertIs(root_rand.data1, root.data1)
         
-        self.assertIs(root_rand._particle_kernal, sub_module_rand._particle_kernal)
-        self.assertIsNot(root_rand._particle_kernal, root._particle_kernal)
-        self.assertIs(root_rand._version_kernal, root._version_kernal)
+        self.assertIs(root_rand._particle_kernel, sub_module_rand._particle_kernel)
+        self.assertIsNot(root_rand._particle_kernel, root._particle_kernel)
+        self.assertIs(root_rand._version_kernel, root._version_kernel)
         self.assertEqual(root_rand._module_id, root._module_id)
         self.assertEqual(sub_module_rand._module_id, sub_module._module_id)
 
@@ -177,26 +177,26 @@ class TestRandn(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        root_randn: TestModule = root.randn()
+        root_randn: MyModule = root.randn()
         self.assertIsNot(root_randn, root)
         self.assertIsNot(root_randn.param1, root.param1)
         self.assertTrue(root_randn.param1.shape, root.param1.shape)
         self.assertIs(root_randn.buffer1, root.buffer1)
         self.assertIs(root_randn.data1, root.data1)
         
-        sub_module_randn: TestSubModule = root_randn.sub_module
+        sub_module_randn: MySubModule = root_randn.sub_module
         self.assertIsNot(sub_module_randn, sub_module)
         self.assertIsNot(sub_module_randn.param0, sub_module.param0)
         self.assertEqual(sub_module_randn.param0.shape, sub_module.param0.shape)
         self.assertIs(sub_module_randn.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_randn.data0, sub_module.data0)
         
-        self.assertIs(root_randn._particle_kernal, sub_module_randn._particle_kernal)
-        self.assertIsNot(root_randn._particle_kernal, root._particle_kernal)
-        self.assertIs(root_randn._version_kernal, root._version_kernal)
+        self.assertIs(root_randn._particle_kernel, sub_module_randn._particle_kernel)
+        self.assertIsNot(root_randn._particle_kernel, root._particle_kernel)
+        self.assertIs(root_randn._version_kernel, root._version_kernel)
         self.assertEqual(root_randn._module_id, root._module_id)
         self.assertEqual(sub_module_randn._module_id, sub_module._module_id)   
     
@@ -209,26 +209,26 @@ class TestRandn(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        sub_module_randn: TestSubModule = sub_module.randn()
+        sub_module_randn: MySubModule = sub_module.randn()
         self.assertIsNot(sub_module_randn, sub_module)
         self.assertIsNot(sub_module_randn.param0, sub_module.param0)
         self.assertTrue(sub_module_randn.param0.shape, sub_module.param0.shape)
         self.assertIs(sub_module_randn.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_randn.data0, sub_module.data0)
         
-        root_randn: TestModule = sub_module_randn._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        root_randn: MyModule = sub_module_randn._particle_kernel.data.modules[nyto.mtype.ROOT_MODULE_ID]
         self.assertIsNot(root_randn, root)
         self.assertIsNot(root_randn.param1, root.param1)
         self.assertTrue(root_randn.param1.shape, root.param1.shape)
         self.assertIs(root_randn.buffer1, root.buffer1)
         self.assertIs(root_randn.data1, root.data1)
         
-        self.assertIs(root_randn._particle_kernal, sub_module_randn._particle_kernal)
-        self.assertIsNot(root_randn._particle_kernal, root._particle_kernal)
-        self.assertIs(root_randn._version_kernal, root._version_kernal)
+        self.assertIs(root_randn._particle_kernel, sub_module_randn._particle_kernel)
+        self.assertIsNot(root_randn._particle_kernel, root._particle_kernel)
+        self.assertIs(root_randn._version_kernel, root._version_kernel)
         self.assertEqual(root_randn._module_id, root._module_id)
         self.assertEqual(sub_module_randn._module_id, sub_module._module_id)
         
@@ -243,24 +243,24 @@ class TestDetach(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        root_detach: TestModule = root.detach()
+        root_detach: MyModule = root.detach()
         self.assertIsNot(root_detach, root)
         self.assertIs(root_detach.param1, root.param1)
         self.assertIs(root_detach.buffer1, root.buffer1)
         self.assertIs(root_detach.data1, root.data1)
         
-        sub_module_detach: TestSubModule = root_detach.sub_module
+        sub_module_detach: MySubModule = root_detach.sub_module
         self.assertIsNot(sub_module_detach, sub_module)
         self.assertIs(sub_module_detach.param0, sub_module.param0)
         self.assertIs(sub_module_detach.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_detach.data0, sub_module.data0)
         
-        self.assertIs(root_detach._particle_kernal, sub_module_detach._particle_kernal)
-        self.assertIsNot(root_detach._particle_kernal, root._particle_kernal)
-        self.assertIsNot(root_detach._version_kernal, root._version_kernal)
+        self.assertIs(root_detach._particle_kernel, sub_module_detach._particle_kernel)
+        self.assertIsNot(root_detach._particle_kernel, root._particle_kernel)
+        self.assertIsNot(root_detach._version_kernel, root._version_kernel)
         self.assertEqual(root_detach._module_id, root._module_id)
         self.assertEqual(sub_module_detach._module_id, sub_module._module_id)
         
@@ -273,24 +273,24 @@ class TestDetach(unittest.TestCase):
         data0: UserData = UserData()
         data1: UserData = UserData()
         
-        sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-        root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+        sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+        root: MyModule = MyModule(param1, sub_module, buffer1, data1)
         
-        sub_module_detach: TestSubModule = sub_module.detach()
+        sub_module_detach: MySubModule = sub_module.detach()
         self.assertIsNot(sub_module_detach, sub_module)
         self.assertIs(sub_module_detach.param0, sub_module.param0)
         self.assertIs(sub_module_detach.buffer0, sub_module.buffer0)
         self.assertIs(sub_module_detach.data0, sub_module.data0)
         
-        root_detach: TestModule = sub_module_detach._particle_kernal.data.modules[nyto.mtype.ROOT_MODULE_ID]
+        root_detach: MyModule = sub_module_detach._particle_kernel.data.modules[nyto.mtype.ROOT_MODULE_ID]
         self.assertIsNot(root_detach, root)
         self.assertIs(root_detach.param1, root.param1)
         self.assertIs(root_detach.buffer1, root.buffer1)
         self.assertIs(root_detach.data1, root.data1)
         
-        self.assertIs(root_detach._particle_kernal, sub_module_detach._particle_kernal)
-        self.assertIsNot(root_detach._particle_kernal, root._particle_kernal)
-        self.assertIsNot(root_detach._version_kernal, root._version_kernal)
+        self.assertIs(root_detach._particle_kernel, sub_module_detach._particle_kernel)
+        self.assertIsNot(root_detach._particle_kernel, root._particle_kernel)
+        self.assertIsNot(root_detach._version_kernel, root._version_kernel)
         self.assertEqual(root_detach._module_id, root._module_id)
         self.assertEqual(sub_module_detach._module_id, sub_module._module_id)
 
@@ -312,8 +312,8 @@ class TestGetParamId(unittest.TestCase):
         root_param_id = root.get_param_id(root.param)
         submodule_param_id = root.get_param_id(root.submodule.param)
         
-        self.assertIs(root._particle_kernal.data.params[root_param_id], root.param)
-        self.assertIs(root._particle_kernal.data.params[submodule_param_id], root.submodule.param)
+        self.assertIs(root._particle_kernel.data.params[root_param_id], root.param)
+        self.assertIs(root._particle_kernel.data.params[submodule_param_id], root.submodule.param)
         
     def test_get_param_id2(self):
         class MyModule(NytoModule):

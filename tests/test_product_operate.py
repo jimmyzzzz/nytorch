@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 from nytorch import NytoModule
 from nytorch.module import ParamProduct
 from nytorch.mtype import ParamType, ParamConfig
@@ -105,16 +105,16 @@ def create_new_root() -> NytoModule:
     data0: UserData = UserData()
     data1: UserData = UserData()
 
-    sub_module: TestSubModule = TestSubModule(param0, lin, buffer0, data0)
-    root: TestModule = TestModule(param1, sub_module, buffer1, data1)
+    sub_module: MySubModule = MySubModule(param0, lin, buffer0, data0)
+    root: MyModule = MyModule(param1, sub_module, buffer1, data1)
     
     return root
 
 
 class TestProductOperateMethod(unittest.TestCase):
     def test_product_unary_operator(self):
-        root: TestModule = create_new_root()
-        add_one_root: TestModule = (root.product()
+        root: MyModule = create_new_root()
+        add_one_root: MyModule = (root.product()
                                         .unary_operator(lambda param, conf: param+1)
                                         .module())
         
@@ -126,9 +126,9 @@ class TestProductOperateMethod(unittest.TestCase):
                                            add_one_dict))
 
     def test_product_binary_operator(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.clone()
-        add_root: TestModule = (root1.product() 
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.clone()
+        add_root: MyModule = (root1.product() 
                                      .binary_operator(root2.product(), 
                                                       lambda param1, param2, conf: param1+param2)
                                      .module())
@@ -147,8 +147,8 @@ class TestProductOperateMethod(unittest.TestCase):
         
 class TestProductNegOperate(unittest.TestCase):
     def test_product_pos_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (+root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (+root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param) for name, param in root.named_parameters())
@@ -157,8 +157,8 @@ class TestProductNegOperate(unittest.TestCase):
                                            manual_dict))
         
     def test_product_neg_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (-root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (-root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, -param) for name, param in root.named_parameters())
@@ -169,8 +169,8 @@ class TestProductNegOperate(unittest.TestCase):
         
 class TestProductPowOperate(unittest.TestCase):
     def test_product_pow_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (root.product() ** 1.2).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (root.product() ** 1.2).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param**1.2) for name, param in root.named_parameters())
@@ -179,8 +179,8 @@ class TestProductPowOperate(unittest.TestCase):
                                            manual_dict))
 
     def test_product_pow_operator2(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (1.2 ** root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (1.2 ** root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, 1.2**param) for name, param in root.named_parameters())
@@ -189,9 +189,9 @@ class TestProductPowOperate(unittest.TestCase):
                                            manual_dict))
     
     def test_product_pow_operator3(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.randn()
-        new_root: TestModule = (root1.product() ** root2.product()).module()
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.randn()
+        new_root: MyModule = (root1.product() ** root2.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict()
@@ -206,8 +206,8 @@ class TestProductPowOperate(unittest.TestCase):
         
 class TestProductAddOperate(unittest.TestCase):
     def test_product_add_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (root.product() + 1).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (root.product() + 1).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param+1) for name, param in root.named_parameters())
@@ -216,8 +216,8 @@ class TestProductAddOperate(unittest.TestCase):
                                            manual_dict))
 
     def test_product_add_operator2(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (1 + root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (1 + root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, 1+param) for name, param in root.named_parameters())
@@ -226,9 +226,9 @@ class TestProductAddOperate(unittest.TestCase):
                                            manual_dict))
     
     def test_product_add_operator3(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.randn()
-        new_root: TestModule = (root1.product() + root2.product()).module()
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.randn()
+        new_root: MyModule = (root1.product() + root2.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict()
@@ -243,8 +243,8 @@ class TestProductAddOperate(unittest.TestCase):
 
 class TestProductSubOperate(unittest.TestCase):
     def test_product_sub_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (root.product() - 1).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (root.product() - 1).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param-1) for name, param in root.named_parameters())
@@ -253,8 +253,8 @@ class TestProductSubOperate(unittest.TestCase):
                                            manual_dict))
 
     def test_product_sub_operator2(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (1 - root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (1 - root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, 1-param) for name, param in root.named_parameters())
@@ -263,9 +263,9 @@ class TestProductSubOperate(unittest.TestCase):
                                            manual_dict))
     
     def test_product_sub_operator3(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.randn()
-        new_root: TestModule = (root1.product() - root2.product()).module()
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.randn()
+        new_root: MyModule = (root1.product() - root2.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict()
@@ -280,8 +280,8 @@ class TestProductSubOperate(unittest.TestCase):
         
 class TestProductMulOperate(unittest.TestCase):
     def test_product_mul_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (root.product() * 1.5).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (root.product() * 1.5).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param*1.5) for name, param in root.named_parameters())
@@ -290,8 +290,8 @@ class TestProductMulOperate(unittest.TestCase):
                                            manual_dict))
 
     def test_product_mul_operator2(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (1.5 * root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (1.5 * root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, 1.5*param) for name, param in root.named_parameters())
@@ -300,9 +300,9 @@ class TestProductMulOperate(unittest.TestCase):
                                            manual_dict))
     
     def test_product_mul_operator3(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.randn()
-        new_root: TestModule = (root1.product() * root2.product()).module()
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.randn()
+        new_root: MyModule = (root1.product() * root2.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict()
@@ -317,8 +317,8 @@ class TestProductMulOperate(unittest.TestCase):
         
 class TestProductTruedivOperate(unittest.TestCase):
     def test_product_truediv_operator1(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (root.product() / 1.5).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (root.product() / 1.5).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, param/1.5) for name, param in root.named_parameters())
@@ -327,8 +327,8 @@ class TestProductTruedivOperate(unittest.TestCase):
                                            manual_dict))
 
     def test_product_truediv_operator2(self):
-        root: TestModule = create_new_root()
-        new_root: TestModule = (1.5 / root.product()).module()
+        root: MyModule = create_new_root()
+        new_root: MyModule = (1.5 / root.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict((name, 1.5/param) for name, param in root.named_parameters())
@@ -337,9 +337,9 @@ class TestProductTruedivOperate(unittest.TestCase):
                                            manual_dict))
     
     def test_product_truediv_operator3(self):
-        root1: TestModule = create_new_root()
-        root2: TestModule = root1.randn()
-        new_root: TestModule = (root1.product() / root2.product()).module()
+        root1: MyModule = create_new_root()
+        root2: MyModule = root1.randn()
+        new_root: MyModule = (root1.product() / root2.product()).module()
         
         with torch.no_grad():
             manual_dict = OrderedDict()

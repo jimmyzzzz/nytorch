@@ -2,7 +2,7 @@ from collections import OrderedDict
 from nytorch import NytoModule
 from torch import nn
 from typing import Optional
-from .utils import TestModule, TestSubModule, UserData
+from .utils import MyModule, MySubModule, UserData
 
 import nytorch as nyto
 import unittest
@@ -37,9 +37,9 @@ class TestReference(unittest.TestCase):
             self.assertIn("modules from different particles refer to the same module", str(w[-1].message))
             
             root: RootModule = RootModule(b, c)
-            self.assertIs(root._particle_kernal, root.b._particle_kernal)
-            self.assertIs(root._particle_kernal, root.c._particle_kernal)
-            self.assertIs(root._particle_kernal, root.b.a._particle_kernal)
+            self.assertIs(root._particle_kernel, root.b._particle_kernel)
+            self.assertIs(root._particle_kernel, root.c._particle_kernel)
+            self.assertIs(root._particle_kernel, root.b.a._particle_kernel)
             self.assertEqual(root._module_id, nyto.mtype.ROOT_MODULE_ID)
             
             def assertModuleIDNotEquals(n, m_ls):

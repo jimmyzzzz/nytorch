@@ -16,7 +16,7 @@ class VersionData(abc.ABC, Generic[Tvdata, Tpdata]):
     Abstract base class for storing metadata of particles.
 
     This class is responsible for storing the metadata of particles, specifically the metadata of the species 
-    to which the particle belongs. It is essential for particle operations and will be stored in `VersionKernal.data`.
+    to which the particle belongs. It is essential for particle operations and will be stored in `VersionKernel.data`.
 
     Once an instance is created, its content remains unchanged. When new metadata is required, a copy is created 
     and modifications are applied to the new instance.
@@ -33,14 +33,14 @@ class VersionData(abc.ABC, Generic[Tvdata, Tpdata]):
     """
     
     @abc.abstractmethod
-    def init_kernal(self, kernal: 'VersionKernal') -> None:
+    def init_kernel(self, kernel: 'VersionKernel') -> None:
         """
-        Initializes the version kernal before creating a new version.
+        Initializes the version kernel before creating a new version.
 
-        This method ensures that the `VersionKernal` is properly initialized and ready to store this instance.
+        This method ensures that the `VersionKernel` is properly initialized and ready to store this instance.
 
         Args:
-            kernal (VersionKernal): The `VersionKernal` instance that will store this instance.
+            kernel (VersionKernel): The `VersionKernel` instance that will store this instance.
         """
         return 
     
@@ -75,7 +75,7 @@ class ParticleData(abc.ABC, Generic[Tvdata, Tpdata]):
     Abstract base class for storing parameters of particles.
 
     This class stores references to all parameters of the corresponding particle. It is essential for particle 
-    operations and will be stored in `ParticleKernal.data`.
+    operations and will be stored in `ParticleKernel.data`.
 
     A corresponding subclass of `VersionData` should be defined when instantiating this class, as shown below:
 
@@ -89,14 +89,14 @@ class ParticleData(abc.ABC, Generic[Tvdata, Tpdata]):
     """
 
     @abc.abstractmethod
-    def init_kernal(self, kernal: ParticleKernal) -> None:
+    def init_kernel(self, kernel: ParticleKernel) -> None:
         """
-        Initializes the particle kernal before creating a new particle.
+        Initializes the particle kernel before creating a new particle.
 
-        This method ensures that the `ParticleKernal` is properly initialized and ready to store this instance.
+        This method ensures that the `ParticleKernel` is properly initialized and ready to store this instance.
 
         Args:
-            kernal (ParticleKernal): The `ParticleKernal` instance that will store this instance.
+            kernel (ParticleKernel): The `ParticleKernel` instance that will store this instance.
         """
         return  
     
@@ -118,13 +118,13 @@ class ParticleData(abc.ABC, Generic[Tvdata, Tpdata]):
 
 class VersionUpdater(abc.ABC, Generic[Tvdata, Tpdata]):
     r"""
-    Abstract base class for tools that update VersionKernal instances.
+    Abstract base class for tools that update VersionKernel instances.
 
     This class provides a template for implementing tools that handle updates
-    of VersionKernal instances. A corresponding subclass of ParticleUpdater should be implemented
+    of VersionKernel instances. A corresponding subclass of ParticleUpdater should be implemented
     to manage the particle updates.
 
-    The following methods are called in sequence when updating a VersionKernal instance:
+    The following methods are called in sequence when updating a VersionKernel instance:
     
         1. `set_version_data`
         2. `set_particle_data`
@@ -178,12 +178,12 @@ class VersionUpdater(abc.ABC, Generic[Tvdata, Tpdata]):
     
 class ParticleUpdater(abc.ABC, Generic[Tvdata, Tpdata]):
     r"""
-    Abstract base class for tools that update ParticleKernal instances.
+    Abstract base class for tools that update ParticleKernel instances.
 
     This class provides a template for implementing tools that handle direct operations on particles
     when updating to the next version. The `run` method defines these operations.
 
-    The following methods are called in sequence when updating a ParticleKernal instance:
+    The following methods are called in sequence when updating a ParticleKernel instance:
     
         1. `set_version_data`
         2. `set_next_version_data`
@@ -249,7 +249,7 @@ class ParticleUpdater(abc.ABC, Generic[Tvdata, Tpdata]):
         return
     
     
-class VersionKernal(Generic[Tvdata, Tpdata]):
+class VersionKernel(Generic[Tvdata, Tpdata]):
     r"""
     Core class for managing versions of particle metadata.
 
@@ -262,7 +262,7 @@ class VersionKernal(Generic[Tvdata, Tpdata]):
             The VersionData subclass instance storing particle metadata, used to assist particle operations.
 
     Attributes:
-        next_version (Optional[VersionKernal[Tvdata, Tpdata]]): 
+        next_version (Optional[VersionKernel[Tvdata, Tpdata]]): 
             Points to the next version.
         particle_updater (Optional[ParticleUpdater[Tvdata, Tpdata]]): 
             Tool for updating particles within the current version.
@@ -272,7 +272,7 @@ class VersionKernal(Generic[Tvdata, Tpdata]):
     
     __slots__ = "next_version", "particle_updater", "data"
 
-    next_version: Optional[VersionKernal[Tvdata, Tpdata]]
+    next_version: Optional[VersionKernel[Tvdata, Tpdata]]
     particle_updater: Optional[ParticleUpdater[Tvdata, Tpdata]]
     data: Tvdata
     
@@ -286,10 +286,10 @@ class VersionKernal(Generic[Tvdata, Tpdata]):
         self.next_version = None
         self.particle_updater = None
         self.data = data
-        self.data.init_kernal(self)
+        self.data.init_kernel(self)
     
     def __repr__(self) -> str:
-        return f"VersionKernal({self.data})"
+        return f"VersionKernel({self.data})"
     
     @property
     def is_newest(self) -> bool:
@@ -317,7 +317,7 @@ class VersionKernal(Generic[Tvdata, Tpdata]):
         next_data, self.particle_updater = (version_updater.set_version_data(self.data)
                                                            .set_particle_data(particle_data)
                                                            .run(self.data))
-        self.next_version = VersionKernal(next_data)
+        self.next_version = VersionKernel(next_data)
         (self.particle_updater.set_version_data(self.data)
                               .set_next_version_data(next_data)
                               .set_particle_data(particle_data))
@@ -347,31 +347,31 @@ class VersionKernal(Generic[Tvdata, Tpdata]):
         self.next_version = None
         self.particle_updater = None
     
-    def copy(self) -> VersionKernal:
+    def copy(self) -> VersionKernel:
         """
         Creates a shallow copy of the current version.
 
         Returns:
             VersionKernel: A shallow copy of the current VersionKernel.
         """
-        return VersionKernal(self.data.copy())
+        return VersionKernel(self.data.copy())
         
 
-class ParticleKernal(Generic[Tvdata, Tpdata]):
+class ParticleKernel(Generic[Tvdata, Tpdata]):
     r"""
     Core class for managing particles.
 
-    Each `ParticleKernal` instance represents a particle, storing the particle's specific parameters.
+    Each `ParticleKernel` instance represents a particle, storing the particle's specific parameters.
     The particle's metadata is stored in the version instance pointed to by `version`.
 
     Args:
-        version (VersionKernal[Tvdata, Tpdata]):
+        version (VersionKernel[Tvdata, Tpdata]):
             Points to the corresponding version.
         data (Tpdata):
             The ParticleData subclass instance storing particle parameters, used to assist particle operations.
 
     Attributes:
-        version (VersionKernal[Tvdata, Tpdata]): 
+        version (VersionKernel[Tvdata, Tpdata]): 
             Points to the corresponding version.
         data (Tpdata): 
             The ParticleData subclass instance storing particle parameters, used to assist particle operations.
@@ -379,10 +379,10 @@ class ParticleKernal(Generic[Tvdata, Tpdata]):
     
     __slots__ = "version", "data"
 
-    version: VersionKernal[Tvdata, Tpdata]
+    version: VersionKernel[Tvdata, Tpdata]
     data: Tpdata
     
-    def __init__(self, version: VersionKernal[Tvdata, Tpdata], data: Tpdata) -> None:
+    def __init__(self, version: VersionKernel[Tvdata, Tpdata], data: Tpdata) -> None:
         """
         Initializes a `ParticleKernel` instance with the given version and data.
 
@@ -394,12 +394,12 @@ class ParticleKernal(Generic[Tvdata, Tpdata]):
         """
         self.version = version
         self.data = data
-        self.data.init_kernal(self)
+        self.data.init_kernel(self)
         
     def __repr__(self) -> str:
-        return f"ParticleKernal({self.data})"
+        return f"ParticleKernel({self.data})"
         
-    def create(self, data: Tpdata) -> ParticleKernal[Tvdata, Tpdata]:
+    def create(self, data: Tpdata) -> ParticleKernel[Tvdata, Tpdata]:
         """
         Creates a ParticleKernel belonging to the same species.
 
@@ -409,7 +409,7 @@ class ParticleKernal(Generic[Tvdata, Tpdata]):
         Returns:
             ParticleKernel[Tvdata, Tpdata]: A new ParticleKernel instance.
         """
-        return ParticleKernal(self.version, data)
+        return ParticleKernel(self.version, data)
     
     def version_update(self, version_updater: VersionUpdater[Tvdata, Tpdata]) -> None:
         """
@@ -443,7 +443,7 @@ class ParticleKernal(Generic[Tvdata, Tpdata]):
             self.version.particle_update(self.data)
             self.version = self.version.next_version
             
-    def detach(self) -> ParticleKernal[Tvdata, Tpdata]:
+    def detach(self) -> ParticleKernel[Tvdata, Tpdata]:
         """
         Detaches the current particle kernel instance to a new species.
 
@@ -453,7 +453,7 @@ class ParticleKernal(Generic[Tvdata, Tpdata]):
         Returns:
             ParticleKernel[Tvdata, Tpdata]: The detached ParticleKernel instance.
         """
-        return ParticleKernal(self.version.copy(),
+        return ParticleKernel(self.version.copy(),
                               self.data.copy(self.version.data))
 
 

@@ -7,7 +7,7 @@ class UserData:
     pass
 
 
-class TestSubModule(NytoModule):
+class MySubModule(NytoModule):
     def __init__(self, param: nn.Parameter, lin: nn.Linear, buffer: torch.Tensor, data: UserData):
         super().__init__()
         self.param0: nn.Parameter = param
@@ -19,7 +19,7 @@ class TestSubModule(NytoModule):
         return self.lin(x) + self.param0
     
 
-class TestModule(NytoModule):
+class MyModule(NytoModule):
     def __init__(self, param: nn.Parameter, sub_module: NytoModule, buffer: torch.Tensor, data: UserData):
         super().__init__()
         self.param1: nn.Parameter = param

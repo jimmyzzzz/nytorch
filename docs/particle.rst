@@ -8,7 +8,7 @@ if you encounter problems in model construction,
 the content of this chapter may provide you with answers.
 
 
-Particle kernal
+Particle kernel
 ------------------
 
 .. note::
@@ -63,7 +63,7 @@ we must understand the program structure of particles.
 
 Below is an example of a particle structure diagram.
 
-.. image:: ./image/particle_kernal.png
+.. image:: ./image/particle_kernel.png
 		:width: 500
 
 And the corresponding code::
@@ -102,13 +102,13 @@ here is an example::
 
 ::
 
-    >>> module1._particle_kernal is module2._particle_kernal
+    >>> module1._particle_kernel is module2._particle_kernel
     True
     
-    >>> module1._particle_kernal is module3._particle_kernal
+    >>> module1._particle_kernel is module3._particle_kernel
     False
     
-    >>> module3._particle_kernal is module4._particle_kernal
+    >>> module3._particle_kernel is module4._particle_kernel
     True
 
 This also answers our second question, that is, each module can only belong to one particle.
@@ -129,14 +129,14 @@ From the structural diagram, we can know that the ParticleKernel instance has tw
 which can obtain the Module and Parameter belonging to the particle,
 they are saved in the corresponding OrderedDict::
 
-    >>> module1._particle_kernal.data.modules
+    >>> module1._particle_kernel.data.modules
     OrderedDict([(0,
                   RootModule(
                     (sub_module): SubModule()
                   )),
                  (1, SubModule())])
              
-    >>> module1._particle_kernal.data.params
+    >>> module1._particle_kernel.data.params
     OrderedDict([(0,
                   Parameter containing:
                   tensor([0.], requires_grad=True)),
@@ -249,7 +249,7 @@ The reason for these warnings is to facilitate the removal of unused modules. Co
     root = ModuleA()
     del root.b
     
-When we delete the reference to ``root.b``, we lose access to the instances of ``ModuleB`` and ``ModuleC``, making them potentially eligible for cleanup by Python's garbage collector. However, since we can still access the corresponding instances through ``root._particle_kernal``, they may not be cleared by Python's garbage collector, which is problematic.
+When we delete the reference to ``root.b``, we lose access to the instances of ``ModuleB`` and ``ModuleC``, making them potentially eligible for cleanup by Python's garbage collector. However, since we can still access the corresponding instances through ``root._particle_kernel``, they may not be cleared by Python's garbage collector, which is problematic.
 
 Our approach is to identify modules that cannot be accessed from the root module after a reference deletion and then remove them.
 
@@ -351,10 +351,10 @@ More accurately, the submodule is added to another particle. Both particles will
 
 Since the submodule can only point to one particle, it must relinquish its original particle::
 
-	>>> sub_module._particle_kernal is root1._particle_kernal
+	>>> sub_module._particle_kernel is root1._particle_kernel
 	False
 	
-	>>> sub_module._particle_kernal is root2._particle_kernal
+	>>> sub_module._particle_kernel is root2._particle_kernel
 	True
 
 Of course, encountering this warning during particle construction doesn't necessarily mean the final particle is flawed. Here's an example::
@@ -383,7 +383,7 @@ Of course, encountering this warning during particle construction doesn't necess
     def checking_references(root: base.NytoModuleBase):
         for submodule in root.modules():
             if isinstance(submodule, base.NytoModuleBase):
-                assert submodule._particle_kernal is root._particle_kernal
+                assert submodule._particle_kernel is root._particle_kernel
 
     root = ModuleC()
     checking_references(root)  # PASS
@@ -464,7 +464,7 @@ Identify which submodules point to other particles using the following example f
         suspicious_submodules: set[str] = set()
         for name, submodule in net.named_modules():
             if not isinstance(submodule, base.NytoModuleBase): continue
-            if submodule._particle_kernal is net._particle_kernal: continue
+            if submodule._particle_kernel is net._particle_kernel: continue
             suspicious_submodules.add(name)
         return suspicious_submodules
 
