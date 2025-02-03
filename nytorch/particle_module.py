@@ -347,9 +347,9 @@ class GetNytoModule(Generic[Tmodule]):
     Attributes:
         _module(ParticleModule[Tmodule]): The ParticleModule being processed.
 
-    To directly manipulate an instance of a NytoModule subclass wrapped by ParticleModule, 
+    To directly assign attributes to an instance of a NytoModule subclass wrapped by ParticleModule, 
     call `restore_kernel_ref` first to restore the kernel reference, 
-    and then call `clear_kernel_ref` after the operation::
+    and then call `clear_kernel_ref` after the assignment operation::
 
         model = ParticleModule(MyNytoModule())
         model.restore_kernel_ref()
