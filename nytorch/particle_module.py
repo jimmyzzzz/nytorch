@@ -348,8 +348,8 @@ class GetNytoModule(Generic[Tmodule]):
         _module(ParticleModule[Tmodule]): The ParticleModule being processed.
 
     To directly assign attributes and synchronization(touch) to an instance of a NytoModule subclass wrapped by ParticleModule, 
-    call `restore_kernel_ref` first to restore the kernel reference, 
-    and then call `clear_kernel_ref` after the assignment operation::
+    call ``restore_kernel_ref`` first to restore the kernel reference, 
+    and then call ``clear_kernel_ref`` after the assignment operation::
 
         model = ParticleModule(MyNytoModule())
         model_clone = model.clone()
@@ -364,7 +364,7 @@ class GetNytoModule(Generic[Tmodule]):
         model_clone.root_module.touch()
         model_clone.clear_kernel_ref()
 
-    Alternatively, use `GetNytoModule` to simplify::
+    Alternatively, use ``GetNytoModule`` to simplify::
 
         model = ParticleModule(MyNytoModule())
         model_clone = model.clone()
