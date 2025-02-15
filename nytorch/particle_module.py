@@ -336,3 +336,57 @@ class ParticleModule(nn.Module, Particle[PMProduct], Generic[Tmodule]):
         self_clone = self.clone()
         self_clone.load_state_dict(source.state_dict())
         return self_clone
+
+
+class GetNytoModule(Generic[Tmodule]):
+    r"""Context manager for automatic restoration and cleanup of kernel reference.
+
+    Args:
+        particle_module(ParticleModule[Tmodule]): The ParticleModule to be processed.
+
+    Attributes:
+        _module(ParticleModule[Tmodule]): The ParticleModule being processed.
+
+    To directly assign attributes and synchronization(touch) to an instance of a NytoModule subclass wrapped by ParticleModule, 
+    call ``restore_kernel_ref`` first to restore the kernel reference, 
+    and then call ``clear_kernel_ref`` after the assignment operation::
+
+        model = ParticleModule(MyNytoModule())
+        model_clone = model.clone()
+        
+        # assign attributes
+        model.restore_kernel_ref()
+        model.root_module.data_embed = nn.Embedding(30, 8)
+        model.clear_kernel_ref()
+        
+        # synchronization
+        model_clone.restore_kernel_ref()
+        model_clone.root_module.touch()
+        model_clone.clear_kernel_ref()
+
+    Alternatively, use ``GetNytoModule`` to simplify::
+
+        model = ParticleModule(MyNytoModule())
+        model_clone = model.clone()
+    
+        with GetNytoModule(model) as my_nyto_module:
+            my_nyto_module.data_embed = nn.Embedding(30, 8)
+            
+        with GetNytoModule(model_clone) as my_nyto_module_clone:
+            my_nyto_module_clone.touch()
+    """
+    
+    __slots__ = "_module"
+    
+    _module: ParticleModule[Tmodule]
+    
+    def __init__(self, particle_module: ParticleModule[Tmodule]):
+        assert isinstance(particle_module, ParticleModule)
+        self._module = particle_module
+    
+    def __enter__(self) -> Tmodule:
+        self._module.restore_kernel_ref()
+        return self._module.root_module
+
+    def __exit__(self, exc_type, exc_value, traceback_obj):
+        self._module.clear_kernel_ref()

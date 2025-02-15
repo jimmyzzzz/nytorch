@@ -184,7 +184,7 @@ Similarly, for adding modules, the event initiator adds the module itself, while
     >>> torch.equal(net2.add_linear.bias, add_linear.bias)
     True
 
-However, for adding buffers, both the event initiator and event receiver add the actual buffer::
+However, for adding buffers, both the event initiator and event receiver add a reference to the same buffer::
 
 	add_tensor = torch.randn(3, 3)
 	net1.register_buffer("add_tensor", add_tensor)
@@ -201,13 +201,141 @@ However, for adding buffers, both the event initiator and event receiver add the
 As for deleting modules, buffers, and parameters, there's no difference in behavior between event initiators and event receivers.
 
 
+Avoiding Update Behavior
+-------------------------
 
+In nytorch, any version update to a NytoModule instance is mandatory. 
+This means that in nytorch, 
+you cannot avoid a version update after making any of the following six events as modifications:
 
+    1. Adding a module
+    2. Deleting a module
+    3. Adding a buffer
+    4. Deleting a buffer
+    5. Adding a parameter
+    6. Deleting a parameter
 
+However, we may want to avoid triggering a version update in certain situations. 
+Below is a specific example::
 
+    import torch
+    import torch.nn as nn
+    import nytorch as nyto
 
+    class MyModule(nyto.NytoModule):
+        def __init__(self, rate=0.5):
+            super().__init__()
+            self.layer = nn.Linear(4, 1)
+            self.register_buffer("mean", torch.zeros(1))
+            self.rate = rate
 
+        def forward(self, x):
+            y = self.layer(x)
+            self.update_mean(y)
+            return y
 
+        def update_mean(self, y):
+            with torch.no_grad():
+                self.mean = (1-self.rate)*self.mean + self.rate*y.mean()
+    
+    model = MyModule()
+    model_clone = model.clone()
+
+We need to record the output mean in the buffer each time. 
+Our expectation is that different particles of the same species have their own independent mean records. 
+However, you will find that when one of the particles updates the mean, 
+all particles of the same species are updated::
+
+    >>> model.mean
+    tensor([0.])
+    >>> model_clone.mean
+    tensor([0.])
+    >>> y = model(torch.randn(10, 4))
+    >>> model.mean
+    tensor([0.2386])
+    >>> model_clone.touch().mean
+    tensor([0.2386])
+
+For this, we have two different solutions.
+
+Solution 1: Move the buffer to a ``torch.nn.Module``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first solution is to move the buffer that needs to be modified to a ``torch.nn.Module``. 
+This way, when the buffer is modified, 
+it will not trigger a version update::
+    
+    import torch
+    import torch.nn as nn
+    import nytorch as nyto
+
+    class MeanRecord(nn.Module):
+        def __init__(self, rate=0.5):
+            super().__init__()
+            self.register_buffer("mean", torch.zeros(1))
+            self.rate = rate
+
+        def update_mean(self, output):
+            with torch.no_grad():
+                self.mean = (1-self.rate)*self.mean + self.rate*output.mean()
+
+    class MyModule(nyto.NytoModule):
+        def __init__(self):
+            super().__init__()
+            self.layer = nn.Linear(4, 1)
+            self.mean_record = MeanRecord()
+
+        def forward(self, x):
+            y = self.layer(x)
+            self.mean_record.update_mean(y)
+            return y
+
+In the example above, 
+we define a ``MeanRecord`` class to record the mean of the ``MyModule`` and store the mean in the buffer. 
+This way, different particles of the same species have their own independent mean records::
+
+    >>> model.mean_record.mean
+    tensor([0.])
+    >>> model_clone.mean_record.mean
+    tensor([0.])
+    >>> y = model(torch.randn(10, 4))
+    >>> model.mean_record.mean
+    tensor([0.2386])
+    >>> model_clone.touch().mean_record.mean
+    tensor([0.])
+
+Solution 2: Use ``super().register_buffer`` to modify the buffer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second solution is to use ``super().register_buffer`` to modify the buffer, 
+which can also avoid triggering a version update::
+
+    import torch
+    import torch.nn as nn
+    import nytorch as nyto
+
+    class MyModule(nyto.NytoModule):
+        def __init__(self, rate=0.5):
+            super().__init__()
+            self.layer = nn.Linear(4, 1)
+            self.register_buffer("mean", torch.zeros(1))
+            self.rate = rate
+
+        def forward(self, x):
+            y = self.layer(x)
+            self.update_mean(y)
+            return y
+
+        def update_mean(self, y):
+            with torch.no_grad():
+                new_mean = (1-self.rate)*self.mean + self.rate*y.mean()
+                super().register_buffer("mean", new_mean)
+
+.. warning::
+
+    Although users can also avoid version updates by modifying parameters and modules using the above methods, 
+    it is not recommended to do so, 
+    as it carries the risk of causing incorrect behavior.
 
 
 

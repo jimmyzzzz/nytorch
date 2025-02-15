@@ -8,4 +8,4 @@ from nytorch import version_updater
 from nytorch import module
 from nytorch import particle_module
 from nytorch.module import NytoModule
-from nytorch.particle_module import ParticleModule
+from nytorch.particle_module import GetNytoModule, ParticleModule

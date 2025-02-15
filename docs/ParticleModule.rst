@@ -178,15 +178,38 @@ You can access the original model through the ``root_module`` attribute::
       (layer2): Linear(in_features=12, out_features=3, bias=True)
     )
 
-However, it's recommended not to perform any direct operations on the original model since the reference to the particle kernel has been cleared. If necessary, you can restore the reference to the particle kernel using the ``restore_kernel_ref()`` method and clear the reference using the ``clear_kernel_ref()`` method::
+However, 
+it is recommended not to perform any operations on the original model that may trigger a version update, 
+as the reference to the particle kernel has been cleared. If necessary, 
+you can restore the reference to the particle kernel using the ``restore_kernel_ref`` method and clear the reference using the ``clear_kernel_ref`` method::
 
-    >>> net.restore_kernel_ref()
-    >>> net.root_module._particle_kernel is None
-    False
+    model = ParticleModule(MyNytoModule())
+    model_clone = model.clone()
     
-    net.clear_kernel_ref()
-    >>> net.root_module._particle_kernel is None
-    True
+    # version update
+    model.restore_kernel_ref()
+    model.root_module.data_embed = nn.Embedding(30, 8)
+    model.clear_kernel_ref()
+    
+    # synchronization
+    model_clone.restore_kernel_ref()
+    model_clone.root_module.touch()
+    model_clone.clear_kernel_ref()
+
+Alternatively, use ``GetNytoModule`` to simplify::
+
+    from nytorch import GetNytoModule
+
+    model = ParticleModule(MyNytoModule())
+    model_clone = model.clone()
+
+    # version update
+    with GetNytoModule(model) as my_nyto_module:
+        my_nyto_module.data_embed = nn.Embedding(30, 8)
+        
+    # synchronization
+    with GetNytoModule(model_clone) as my_nyto_module_clone:
+        my_nyto_module_clone.touch()
 
 
 Particle operation
